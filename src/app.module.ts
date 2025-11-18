@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { SocialAccountsModule } from './social_accounts/social_accounts.module';
 import { PostsModule } from './post/post.module';
+import { TiktokModule } from './tiktok/tiktok.module';
+
 
 
 
@@ -32,6 +34,8 @@ import { PostsModule } from './post/post.module';
     ChatbotModule,
     SocialAccountsModule,
     PostsModule,
+    TiktokModule,
+
 
   ],
   controllers: [AppController],
