@@ -7,7 +7,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { Not, IsNull } from 'typeorm'; // Importar Not e IsNull
 import * as bcryptjs from 'bcryptjs';
-import { Role } from 'src/common/enums/rol.enum';
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -22,10 +22,6 @@ export class UsersService {
     return this.userRepository.save(createUserDto);
   }
   
-  // ⬅️ NUEVO: Busca un usuario por su ID de Facebook
-  findOneByFacebookId(facebookId: string) {
-    return this.userRepository.findOneBy({ facebookId });
-  }
 
   //retorna si existe o no el usuario en la bd (usa email)
   findOneByEmail(email: string) {
@@ -37,14 +33,10 @@ export class UsersService {
     // Esto se usa para el login local. Funciona porque el email es único.
     return this.userRepository.findOne({
       where: { email },
-      select: ['id', 'name', 'email', 'password', 'role'],
+      select: ['id', 'name', 'email', 'password', ],
     });
   }
 
-  // ⬅️ NUEVO: Actualiza el ID de Facebook de un usuario existente
-  async updateFacebookId(id: number, facebookId: string): Promise<void> {
-    await this.userRepository.update(id, { facebookId });
-  }
 
   findAll() {
     return this.userRepository.find();
@@ -53,7 +45,7 @@ export class UsersService {
   async findOne(id: number) {
     return this.userRepository.findOne({
       where: { id },
-      select: ['id', 'name', 'email', 'role'],
+      select: ['id', 'name', 'email', ],
     });
   }
 
@@ -88,7 +80,7 @@ export class UsersService {
       name: data.username,
       email: `tiktok_${data.tiktokId}@temp.com`, // Email temporal
       password: await bcryptjs.hash(Math.random().toString(36), 10), // Password random
-      role: Role.USER,
+
     });
 
     return this.userRepository.save(newUser);
