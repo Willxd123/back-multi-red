@@ -1,3 +1,4 @@
+import { Conversation } from './../../conversation/entities/conversation.entity';
 import { SocialAccount } from './../../social_accounts/entities/social_account.entity';
 import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -24,4 +25,7 @@ export class User {
 
   @OneToMany(() => SocialAccount, (socialAccount) => socialAccount.user)
   socialAccounts: SocialAccount[];
+
+  @OneToMany(() => Conversation, (conversation) => conversation.user)
+  conversations: Conversation[];
 }
