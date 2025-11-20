@@ -23,28 +23,6 @@ export class TiktokService {
     private readonly configService: ConfigService,
   ) {}
 
-  // ========== CONEXIÓN CON TIKTOK ==========
-
-  /**
-   * Generar URL de autenticación de TikTok
-   */
-  getAuthUrl(): string {
-    const clientKey = this.configService.get<string>('TIKTOK_CLIENT_KEY');
-    const redirectUri = encodeURIComponent(
-      this.configService.get<string>('TIKTOK_CALLBACK_URL'),
-    );
-    const csrfState = Math.random().toString(36).substring(2);
-
-    return (
-      `https://www.tiktok.com/v2/auth/authorize/` +
-      `?client_key=${clientKey}` +
-      `&scope=user.info.basic,video.publish,video.upload` +
-      `&response_type=code` +
-      `&redirect_uri=${redirectUri}` +
-      `&state=${csrfState}`
-    );
-  }
-
   /**
    * Generar URL de conexión (para usuarios ya autenticados)
    */
@@ -182,11 +160,6 @@ export class TiktokService {
     );
   }
 
-  // ========== UTILIDADES ==========
-
-  /**
-   * Verificar si TikTok está conectado
-   */
   async isConnected(userId: number): Promise<boolean> {
     return this.socialAccountsService.hasAccount(userId, 'tiktok');
   }

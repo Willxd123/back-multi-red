@@ -10,36 +10,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';  // ⬅️ Para configurar el storage
 import * as path from 'path';          // ⬅️ Para manejar rutas de archivos
 import * as fs from 'fs';              // ⬅️ Para eliminar archivos
+import { PublishFromMessageDto } from './dto/publish-from-message.dto';
 @ApiTags('posts')
 @ApiBearerAuth()
 @Controller('posts')
 @UseGuards(AuthGuard) // Requiere autenticación
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
-
-  /**
-   * Publicar en Facebook
-   */
-  @Post('facebook')
-  @ApiOperation({ summary: 'Publicar un mensaje en Facebook' })
-  @ApiResponse({ status: 201, description: 'Publicación creada exitosamente' })
-  @ApiResponse({ status: 404, description: 'Facebook no está conectado' })
-  @ApiResponse({ status: 400, description: 'Error al publicar' })
-  async publishToFacebook(
-    @ActiveUser() user: UserActiveInterface,
-    @Body() createPostDto: CreateFacebookPostDto,
-  ) {
-    return await this.postsService.publishToFacebook(user.id, createPostDto);
-  }
-
-  /**
-   * Obtener información de la cuenta de Facebook conectada
-   */
-  @Get('facebook/account')
-  @ApiOperation({ summary: 'Obtener información de la cuenta de Facebook conectada' })
-  async getFacebookAccount(@ActiveUser() user: UserActiveInterface) {
-    return await this.postsService.getFacebookAccountInfo(user.id);
-  }
 
   /**
    * Publicar video en TikTok
@@ -98,5 +75,26 @@ export class PostsController {
       }
       throw error;
     }
+  }
+
+  @Post('tiktok/publish-from-message')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ 
+    summary: 'Publicar en TikTok desde contenido generado por IA',
+    description: 'Publica en TikTok usando la descripción y video ya generados y guardados en un mensaje'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Video publicado exitosamente en TikTok' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Mensaje no encontrado o no contiene contenido de TikTok' 
+  })
+  async publishFromMessage(
+    @ActiveUser() user: UserActiveInterface,
+    @Body() dto: PublishFromMessageDto,
+  ) {
+    return this.postsService.publishTikTokFromMessage(user.id, dto.messageId);
   }
 }

@@ -1,16 +1,11 @@
-import { IsArray, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class RedesInputDto {
   @IsString()
-  titulo: string;
+  @IsNotEmpty()
+  prompt: string;
 
-  @IsString()
-  contenido: string;
-
-  @IsArray()
-  target_networks: string[];
-}
-
-export class RedesOutputDto {
-  [key: string]: any;
+  @IsInt()
+  @IsNotEmpty()
+  conversationId: number; // ⬅️ Campo necesario para la relación
 }

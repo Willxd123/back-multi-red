@@ -1,12 +1,13 @@
+
 import { SocialAccount } from './../social_accounts/entities/social_account.entity';
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { Not, IsNull } from 'typeorm'; // Importar Not e IsNull
 import * as bcryptjs from 'bcryptjs';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {

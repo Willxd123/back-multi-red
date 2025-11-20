@@ -18,18 +18,6 @@ import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagg
 export class TiktokController {
   constructor(private readonly tiktokService: TiktokService) {}
 
-  // ========== CONEXIÓN DE TIKTOK ==========
-
-  /**
-   * Iniciar OAuth con TikTok (solo para conectar cuenta existente)
-   */
-  @Get('auth')
-  @ApiOperation({ summary: 'Iniciar conexión con TikTok' })
-  async initiateAuth(@Res() res: Response) {
-    const authUrl = this.tiktokService.getAuthUrl();
-    res.redirect(authUrl);
-  }
-
   /**
    * Callback de TikTok OAuth
    */
@@ -44,10 +32,10 @@ export class TiktokController {
       await this.tiktokService.handleCallback(code, state);
       
       // Siempre redirige al cliente (solo hay flujo de conexión)
-      res.redirect(`http://localhost:4200/client?connected=tiktok`);
+      res.redirect(`http://localhost:4200/chat?connected=tiktok`);
     } catch (error) {
       console.error('❌ Error en TikTok callback:', error);
-      res.redirect(`http://localhost:4200/client?error=tiktok`);
+      res.redirect(`http://localhost:4200/chat?error=tiktok`);
     }
   }
 
