@@ -165,4 +165,27 @@ export class PostsController {
       dto.messageId,
     );
   }
+
+
+  @Post('linkedin/publish-from-message')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Publicar en LinkedIn desde contenido generado por IA',
+    description:
+      'Publica en LinkedIn usando la descripción e imagen ya generadas y guardadas en un mensaje',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Imagen publicada exitosamente en LinkedIn',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Mensaje no encontrado o no contiene contenido de LinkedIn',
+  })
+  async publishLinkedInFromMessage(
+    @ActiveUser() user: UserActiveInterface,
+    @Body() dto: PublishFromMessageDto,
+  ) {
+    return this.postsService.publishLinkedInFromMessage(user.id, dto.messageId);
+  }
 }

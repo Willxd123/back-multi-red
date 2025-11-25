@@ -14,6 +14,7 @@ import { Repository } from 'typeorm'; // ⬅️ AGREGAR
 import { Message } from '../chatbot/entities/message.entity'; // ⬅️ AGREGAR
 import * as fs from 'fs'; // ⬅️ AGREGAR
 import path from 'path';
+import { LinkedinService } from './../linkedin/linkedin.service';
 
 @Injectable()
 export class PostsService {
@@ -22,6 +23,7 @@ export class PostsService {
     private readonly httpService: HttpService,
     private readonly facebookService: FacebookService,
     private readonly instagramService: InstagramService,
+    private readonly linkedinService: LinkedinService,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
   ) {}
@@ -202,23 +204,30 @@ export class PostsService {
     }
 
     if (message.role !== 'assistant') {
-      throw new BadRequestException('Solo se pueden publicar mensajes del asistente');
+      throw new BadRequestException(
+        'Solo se pueden publicar mensajes del asistente',
+      );
     }
 
     const content = message.content;
-    
+
     if (!content.Facebook) {
-      throw new NotFoundException('Este mensaje no contiene contenido de Facebook');
+      throw new NotFoundException(
+        'Este mensaje no contiene contenido de Facebook',
+      );
     }
 
     const facebookContent = content.Facebook;
-    
+
     if (!facebookContent.media_info) {
-      throw new BadRequestException('El mensaje no tiene información de medios');
+      throw new BadRequestException(
+        'El mensaje no tiene información de medios',
+      );
     }
 
     // ✅ Buscar descripción en ambos lugares
-    const descripcion = facebookContent.descripcion || facebookContent.media_info.descripcion;
+    const descripcion =
+      facebookContent.descripcion || facebookContent.media_info.descripcion;
     const { ruta, fileName } = facebookContent.media_info;
 
     if (!descripcion) {
@@ -237,7 +246,11 @@ export class PostsService {
     console.log(`📝 Descripción: ${descripcion}`);
     console.log(`🖼️ Imagen: ${fileName}`);
 
-    const result = await this.facebookService.publishPhoto(userId, ruta, descripcion);
+    const result = await this.facebookService.publishPhoto(
+      userId,
+      ruta,
+      descripcion,
+    );
 
     await this.messageRepository.update(
       { id: messageId },
@@ -275,23 +288,30 @@ export class PostsService {
     }
 
     if (message.role !== 'assistant') {
-      throw new BadRequestException('Solo se pueden publicar mensajes del asistente');
+      throw new BadRequestException(
+        'Solo se pueden publicar mensajes del asistente',
+      );
     }
 
     const content = message.content;
-    
+
     if (!content.Instagram) {
-      throw new NotFoundException('Este mensaje no contiene contenido de Instagram');
+      throw new NotFoundException(
+        'Este mensaje no contiene contenido de Instagram',
+      );
     }
 
     const instagramContent = content.Instagram;
-    
+
     if (!instagramContent.media_info) {
-      throw new BadRequestException('El mensaje no tiene información de medios');
+      throw new BadRequestException(
+        'El mensaje no tiene información de medios',
+      );
     }
 
     // Buscar descripción en ambos lugares
-    const descripcion = instagramContent.descripcion || instagramContent.media_info.descripcion;
+    const descripcion =
+      instagramContent.descripcion || instagramContent.media_info.descripcion;
     let { ruta, fileName } = instagramContent.media_info;
 
     if (!descripcion) {
@@ -314,7 +334,11 @@ export class PostsService {
     console.log(`🖼️ Imagen: ${fileName}`);
     console.log(`📂 Ruta normalizada: ${ruta}`);
 
-    const result = await this.instagramService.publishPhoto(userId, ruta, descripcion);
+    const result = await this.instagramService.publishPhoto(
+      userId,
+      ruta,
+      descripcion,
+    );
 
     await this.messageRepository.update(
       { id: messageId },
@@ -341,5 +365,92 @@ export class PostsService {
       fileName,
     };
   }
-}
+  // Agregar al final de PostsService, después de publishInstagramFromMessage()
 
+  async publishLinkedInFromMessage(userId: number, messageId: number) {
+    const message = await this.messageRepository.findOne({
+      where: { id: messageId },
+    });
+
+    if (!message) {
+      throw new NotFoundException(`Mensaje con ID ${messageId} no encontrado`);
+    }
+
+    if (message.role !== 'assistant') {
+      throw new BadRequestException(
+        'Solo se pueden publicar mensajes del asistente',
+      );
+    }
+
+    const content = message.content;
+
+    if (!content.LinkedIn) {
+      throw new NotFoundException(
+        'Este mensaje no contiene contenido de LinkedIn',
+      );
+    }
+
+    const linkedinContent = content.LinkedIn;
+
+    if (!linkedinContent.media_info) {
+      throw new BadRequestException(
+        'El mensaje no tiene información de medios',
+      );
+    }
+
+    // Buscar descripción en ambos lugares
+    const descripcion =
+      linkedinContent.descripcion || linkedinContent.media_info.descripcion;
+    let { ruta, fileName } = linkedinContent.media_info;
+
+    if (!descripcion) {
+      throw new BadRequestException('No hay descripción para publicar');
+    }
+
+    if (!ruta || !fileName) {
+      throw new BadRequestException('No hay imagen para publicar');
+    }
+
+    // Normalizar ruta
+    ruta = path.normalize(ruta);
+
+    if (!fs.existsSync(ruta)) {
+      throw new NotFoundException(`La imagen no existe en la ruta: ${ruta}`);
+    }
+
+    console.log(`📱 Publicando en LinkedIn desde mensaje ${messageId}`);
+    console.log(`📝 Descripción: ${descripcion}`);
+    console.log(`🖼️ Imagen: ${fileName}`);
+    console.log(`📂 Ruta normalizada: ${ruta}`);
+
+    const result = await this.linkedinService.publishPost(
+      userId,
+      ruta,
+      descripcion,
+    );
+
+    await this.messageRepository.update(
+      { id: messageId },
+      {
+        content: {
+          ...content,
+          LinkedIn: {
+            ...linkedinContent,
+            publicacion: {
+              estado: 'publicado',
+              mensaje: result.message,
+              fecha: new Date().toISOString(),
+            },
+          },
+        },
+      },
+    );
+
+    return {
+      ...result,
+      messageId,
+      descripcion,
+      fileName,
+    };
+  }
+}

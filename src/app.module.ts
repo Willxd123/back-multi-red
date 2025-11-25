@@ -14,6 +14,7 @@ import { FacebookModule } from './facebook/facebook.module';
 import { InstagramModule } from './instagram/instagram.module';
 import { AwsModule } from './aws/aws.module';
 import { MediaModule } from './media/media.module';
+import { LinkedinModule } from './linkedin/linkedin.module';
 
 
 
@@ -44,7 +45,8 @@ import { MediaModule } from './media/media.module';
     FacebookModule,
     InstagramModule,
     AwsModule,
-    MediaModule
+    MediaModule,
+    LinkedinModule
 
 
   ],
