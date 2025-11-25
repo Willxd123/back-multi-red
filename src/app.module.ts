@@ -10,6 +10,10 @@ import { SocialAccountsModule } from './social_accounts/social_accounts.module';
 import { PostsModule } from './post/post.module';
 import { TiktokModule } from './tiktok/tiktok.module';
 import { ConversationModule } from './conversation/conversation.module';
+import { FacebookModule } from './facebook/facebook.module';
+import { InstagramModule } from './instagram/instagram.module';
+import { AwsModule } from './aws/aws.module';
+import { MediaModule } from './media/media.module';
 
 
 
@@ -37,7 +41,10 @@ import { ConversationModule } from './conversation/conversation.module';
     PostsModule,
     TiktokModule,
     ConversationModule,
-
+    FacebookModule,
+    InstagramModule,
+    AwsModule,
+    MediaModule
 
 
   ],

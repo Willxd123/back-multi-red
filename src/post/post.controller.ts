@@ -1,15 +1,29 @@
 import { CreateFacebookPostDto } from './dto/create-facebook-post.dto';
 import { PostsService } from './post.service';
-import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
 
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { UserActiveInterface } from 'src/common/interfaces/user-active.interface';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';  // ⬅️ Para configurar el storage
-import * as path from 'path';          // ⬅️ Para manejar rutas de archivos
-import * as fs from 'fs';              // ⬅️ Para eliminar archivos
+import { diskStorage } from 'multer'; // ⬅️ Para configurar el storage
+import * as path from 'path'; // ⬅️ Para manejar rutas de archivos
+import * as fs from 'fs'; // ⬅️ Para eliminar archivos
 import { PublishFromMessageDto } from './dto/publish-from-message.dto';
 @ApiTags('posts')
 @ApiBearerAuth()
@@ -23,27 +37,33 @@ export class PostsController {
    */
   @Post('tiktok/video')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FileInterceptor('video', {
-    storage: diskStorage({
-      destination: './uploads/videos',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, `tiktok-${uniqueSuffix}${ext}`);
+  @UseInterceptors(
+    FileInterceptor('video', {
+      storage: diskStorage({
+        destination: './uploads/videos',
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = path.extname(file.originalname);
+          cb(null, `tiktok-${uniqueSuffix}${ext}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        // Solo videos mp4, mov, avi
+        if (file.mimetype.match(/\/(mp4|mov|avi|quicktime)$/)) {
+          cb(null, true);
+        } else {
+          cb(
+            new Error('Solo se permiten archivos de video (mp4, mov, avi)'),
+            false,
+          );
+        }
+      },
+      limits: {
+        fileSize: 500 * 1024 * 1024, // 500MB máximo
       },
     }),
-    fileFilter: (req, file, cb) => {
-      // Solo videos mp4, mov, avi
-      if (file.mimetype.match(/\/(mp4|mov|avi|quicktime)$/)) {
-        cb(null, true);
-      } else {
-        cb(new Error('Solo se permiten archivos de video (mp4, mov, avi)'), false);
-      }
-    },
-    limits: {
-      fileSize: 500 * 1024 * 1024, // 500MB máximo
-    },
-  }))
+  )
   async publishToTikTok(
     @ActiveUser() user: UserActiveInterface,
     @UploadedFile() video: Express.Multer.File,
@@ -79,22 +99,70 @@ export class PostsController {
 
   @Post('tiktok/publish-from-message')
   @UseGuards(AuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Publicar en TikTok desde contenido generado por IA',
-    description: 'Publica en TikTok usando la descripción y video ya generados y guardados en un mensaje'
+    description:
+      'Publica en TikTok usando la descripción y video ya generados y guardados en un mensaje',
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Video publicado exitosamente en TikTok' 
+  @ApiResponse({
+    status: 200,
+    description: 'Video publicado exitosamente en TikTok',
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Mensaje no encontrado o no contiene contenido de TikTok' 
+  @ApiResponse({
+    status: 404,
+    description: 'Mensaje no encontrado o no contiene contenido de TikTok',
   })
   async publishFromMessage(
     @ActiveUser() user: UserActiveInterface,
     @Body() dto: PublishFromMessageDto,
   ) {
     return this.postsService.publishTikTokFromMessage(user.id, dto.messageId);
+  }
+
+  @Post('facebook/publish-from-message')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Publicar en Facebook desde contenido generado por IA',
+    description:
+      'Publica en Facebook usando la descripción e imagen ya generadas y guardadas en un mensaje',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Imagen publicada exitosamente en Facebook',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Mensaje no encontrado o no contiene contenido de Facebook',
+  })
+  async publishFacebookFromMessage(
+    @ActiveUser() user: UserActiveInterface,
+    @Body() dto: PublishFromMessageDto,
+  ) {
+    return this.postsService.publishFacebookFromMessage(user.id, dto.messageId);
+  }
+
+  @Post('instagram/publish-from-message')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Publicar en Instagram desde contenido generado por IA',
+    description:
+      'Publica en Instagram usando el caption e imagen ya generados y guardados en un mensaje',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Imagen publicada exitosamente en Instagram',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Mensaje no encontrado o no contiene contenido de Instagram',
+  })
+  async publishInstagramFromMessage(
+    @ActiveUser() user: UserActiveInterface,
+    @Body() dto: PublishFromMessageDto,
+  ) {
+    return this.postsService.publishInstagramFromMessage(
+      user.id,
+      dto.messageId,
+    );
   }
 }

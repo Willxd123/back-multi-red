@@ -1,3 +1,5 @@
+import { InstagramModule } from './../instagram/instagram.module';
+import { FacebookModule } from './../facebook/facebook.module';
 import { Message } from './../chatbot/entities/message.entity';
 import { AuthModule } from './../auth/auth.module';
 import { PostsService } from './post.service';
@@ -9,8 +11,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    HttpModule, // Para hacer peticiones HTTP a Facebook Graph API
-    SocialAccountsModule, // Para acceder a las cuentas conectadas
+    HttpModule,
+    SocialAccountsModule,
+    FacebookModule,
+    InstagramModule,
     forwardRef(() => AuthModule),
     TypeOrmModule.forFeature([Message])
   ],
