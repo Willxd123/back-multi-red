@@ -1,3 +1,4 @@
+import { LinkedinModule } from './../linkedin/linkedin.module';
 import { InstagramModule } from './../instagram/instagram.module';
 import { FacebookModule } from './../facebook/facebook.module';
 import { Message } from './../chatbot/entities/message.entity';
@@ -15,6 +16,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     SocialAccountsModule,
     FacebookModule,
     InstagramModule,
+    LinkedinModule,
     forwardRef(() => AuthModule),
     TypeOrmModule.forFeature([Message])
   ],

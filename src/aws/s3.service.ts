@@ -186,4 +186,35 @@ export class S3Service {
       throw new Error('No se pudo subir la imagen a S3');
     }
   }
+  /**
+ * Sube imagen para LinkedIn
+ */
+async uploadLinkedInImage(imageBuffer: Buffer): Promise<string> {
+  try {
+    const fecha = new Date();
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    const timestamp = Date.now();
+
+    // Estructura: social-media/linkedin/2025/01/15/img_1234567890.jpg
+    const key = `social-media/linkedin/${year}/${month}/${day}/img_${timestamp}.jpg`;
+
+    const params = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME!,
+      Key: key,
+      Body: imageBuffer,
+      ContentType: 'image/jpeg',
+      ACL: 'public-read' as any,
+    };
+
+    const result = await this.s3.upload(params).promise();
+
+    console.log(`✅ Imagen subida a S3 para LinkedIn: ${result.Location}`);
+    return result.Location;
+  } catch (error) {
+    console.error('❌ Error al subir imagen a S3:', error);
+    throw new Error('No se pudo subir la imagen a S3');
+  }
+}
 }
