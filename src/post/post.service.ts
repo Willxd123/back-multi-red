@@ -1,3 +1,4 @@
+import { WhatsappService } from './../whatsapp/whatsapp.service';
 import { InstagramService } from './../instagram/instagram.service';
 import { FacebookService } from './../facebook/facebook.service';
 import { SocialAccountsService } from './../social_accounts/social_accounts.service';
@@ -24,6 +25,7 @@ export class PostsService {
     private readonly facebookService: FacebookService,
     private readonly instagramService: InstagramService,
     private readonly linkedinService: LinkedinService,
+    private readonly whatsappService: WhatsappService,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
   ) {}
@@ -453,4 +455,91 @@ export class PostsService {
       fileName,
     };
   }
+  
+async publishWhatsAppFromMessage(userId: number, messageId: number) {
+  const message = await this.messageRepository.findOne({
+    where: { id: messageId },
+  });
+
+  if (!message) {
+    throw new NotFoundException(`Mensaje con ID ${messageId} no encontrado`);
+  }
+
+  if (message.role !== 'assistant') {
+    throw new BadRequestException(
+      'Solo se pueden publicar mensajes del asistente',
+    );
+  }
+
+  const content = message.content;
+
+  if (!content.WhatsApp) {
+    throw new NotFoundException(
+      'Este mensaje no contiene contenido de WhatsApp',
+    );
+  }
+
+  const whatsappContent = content.WhatsApp;
+
+  if (!whatsappContent.media_info) {
+    throw new BadRequestException(
+      'El mensaje no tiene información de medios',
+    );
+  }
+
+  // Buscar descripción en ambos lugares
+  const descripcion =
+    whatsappContent.descripcion || whatsappContent.media_info.descripcion;
+  let { ruta, fileName } = whatsappContent.media_info;
+
+  if (!descripcion) {
+    throw new BadRequestException('No hay descripción para publicar');
+  }
+
+  if (!ruta || !fileName) {
+    throw new BadRequestException('No hay imagen para publicar');
+  }
+
+  // Normalizar ruta
+  ruta = path.normalize(ruta);
+
+  if (!fs.existsSync(ruta)) {
+    throw new NotFoundException(`La imagen no existe en la ruta: ${ruta}`);
+  }
+
+  console.log(`📱 Publicando en WhatsApp Estado desde mensaje ${messageId}`);
+  console.log(`📝 Descripción: ${descripcion}`);
+  console.log(`🖼️ Imagen: ${fileName}`);
+  console.log(`📂 Ruta normalizada: ${ruta}`);
+
+  const result = await this.whatsappService.publishStatus(
+    userId,
+    ruta,
+    descripcion,
+  );
+
+  await this.messageRepository.update(
+    { id: messageId },
+    {
+      content: {
+        ...content,
+        WhatsApp: {
+          ...whatsappContent,
+          publicacion: {
+            estado: 'publicado',
+            mensaje: result.message,
+            fecha: new Date().toISOString(),
+          },
+        },
+      },
+    },
+  );
+
+  return {
+    ...result,
+    messageId,
+    descripcion,
+    fileName,
+  };
+}
 }

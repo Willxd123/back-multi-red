@@ -15,6 +15,7 @@ import { InstagramModule } from './instagram/instagram.module';
 import { AwsModule } from './aws/aws.module';
 import { MediaModule } from './media/media.module';
 import { LinkedinModule } from './linkedin/linkedin.module';
+import { WhatsappModule } from './whatsapp/whatsapp.module';
 
 
 
@@ -46,7 +47,8 @@ import { LinkedinModule } from './linkedin/linkedin.module';
     InstagramModule,
     AwsModule,
     MediaModule,
-    LinkedinModule
+    LinkedinModule,
+    WhatsappModule
 
 
   ],
