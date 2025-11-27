@@ -1,3 +1,4 @@
+import { WhatsappModule } from './../whatsapp/whatsapp.module';
 import { LinkedinModule } from './../linkedin/linkedin.module';
 import { InstagramModule } from './../instagram/instagram.module';
 import { FacebookModule } from './../facebook/facebook.module';
@@ -17,6 +18,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     FacebookModule,
     InstagramModule,
     LinkedinModule,
+    WhatsappModule,
     forwardRef(() => AuthModule),
     TypeOrmModule.forFeature([Message])
   ],

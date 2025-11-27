@@ -188,4 +188,27 @@ export class PostsController {
   ) {
     return this.postsService.publishLinkedInFromMessage(user.id, dto.messageId);
   }
+
+  
+@Post('whatsapp/publish-from-message')
+@UseGuards(AuthGuard)
+@ApiOperation({
+  summary: 'Publicar en WhatsApp Estado desde contenido generado por IA',
+  description:
+    'Publica en WhatsApp Estado usando la descripción e imagen ya generadas y guardadas en un mensaje',
+})
+@ApiResponse({
+  status: 200,
+  description: 'Estado publicado exitosamente en WhatsApp',
+})
+@ApiResponse({
+  status: 404,
+  description: 'Mensaje no encontrado o no contiene contenido de WhatsApp',
+})
+async publishWhatsAppFromMessage(
+  @ActiveUser() user: UserActiveInterface,
+  @Body() dto: PublishFromMessageDto,
+) {
+  return this.postsService.publishWhatsAppFromMessage(user.id, dto.messageId);
+}
 }
